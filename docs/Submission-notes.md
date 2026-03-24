@@ -1,5 +1,13 @@
 # Submission Notes
 
+## Setup for Reviewers
+
+1. Clone the repo and copy `.env.example` to `.env`
+2. Fill in your own `GITHUB_OWNER`, `GITHUB_REPO`, and `GITHUB_TOKEN`
+3. Run `npm install && npm run install:browsers`
+4. Run `node saveSession.js` — a browser will open, log in with your GitHub account, the session will be saved automatically to `.auth/github-storage-state.json`
+5. Run `npx playwright test tests/github/` to execute all tests
+
 ## Assumptions
 
 - GitHub's browser UI communicates exclusively through GraphQL (`/_graphql`), not the REST API. All `waitForResponse` filters target this endpoint since no REST call is made from the browser during UI interactions.
