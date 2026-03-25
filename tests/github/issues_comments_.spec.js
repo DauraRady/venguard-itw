@@ -19,7 +19,11 @@ test('after creating a comment via UI, it should be visible via API', async ({ r
     await page.getByRole('textbox', { name: 'Add a comment' }).fill(commentBody)
 
     await Promise.all([
-      page.waitForResponse(r => r.url().includes('/_graphql') && r.status() === 200),
+      page.waitForResponse(r =>
+        r.url().includes('/_graphql') &&
+        r.status() === 200 &&
+        r.request().postData()?.includes('addCommentMutation')
+      ),
       page.getByRole('button', { name: 'Comment', exact: true }).click(),
     ])
 
@@ -51,7 +55,11 @@ test('after creating a comment via API, edit it and assert via API', async ({ re
     await page.getByRole('textbox', { name: 'Markdown value' }).fill(updatedBody)
 
     await Promise.all([
-      page.waitForResponse(r => r.url().includes('/_graphql') && r.status() === 200),
+      page.waitForResponse(r =>
+        r.url().includes('/_graphql') &&
+        r.status() === 200 &&
+        r.request().postData()?.includes('updateIssueCommentBodyMutation')
+      ),
       page.getByRole('button', { name: 'Update comment' }).click(),
     ])
 
@@ -73,20 +81,18 @@ test('after creating a comment via API, delete it and assert via API', async ({ 
   ids.set({ issue_number: issue.number })
 
   try {
-    // Navigate d'abord — ça laisse le temps à GitHub de propager l'issue
-    await page.goto(`${REPO_URL}/issues/${issue.number}`)
-
-    // Puis ajoute le comment via API
     await hlpGitHub._addIssueComment(request, issue.number, commentBody)
-
-    // Reload pour voir le comment
-    await page.reload()
+    await page.goto(`${REPO_URL}/issues/${issue.number}`)
 
     await page.getByTestId('comment-header-hamburger').click()
     await page.getByTestId('comment-header-hamburger-open').getByText('Delete').click()
 
     await Promise.all([
-      page.waitForResponse(r => r.url().includes('/_graphql') && r.status() === 200),
+      page.waitForResponse(r =>
+        r.url().includes('/_graphql') &&
+        r.status() === 200 &&
+        r.request().postData()?.includes('deleteIssueCommentMutation')
+      ),
       page.getByRole('button', { name: 'Delete', exact: true }).click(),
     ])
 

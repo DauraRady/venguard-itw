@@ -16,7 +16,11 @@ test('after creating an issue via UI, it should be visible in the UI', async ({ 
     await page.getByPlaceholder(/type your description here/i).fill(payload.body)
 
     await Promise.all([
-      page.waitForResponse(r => r.url().includes('/_graphql') && r.status() === 200),
+      page.waitForResponse(r =>
+        r.url().includes('/_graphql') &&
+        r.status() === 200 &&
+        r.request().postData()?.includes('createIssueMutation')
+      ),
       page.waitForURL(/\/issues\/\d+$/),
       page.getByTestId('create-issue-button').click(),
     ])
@@ -60,7 +64,11 @@ test('after creating an issue via API, edit it and assert via API', async ({ req
     await page.getByRole('textbox', { name: /title/i }).fill(newTitle)
 
     await Promise.all([
-      page.waitForResponse(r => r.url().includes('/_graphql') && r.status() === 200),
+      page.waitForResponse(r =>
+        r.url().includes('/_graphql') &&
+        r.status() === 200 &&
+        r.request().postData()?.includes('updateIssueTitleMutation')
+      ),
       page.getByRole('button', { name: 'Save ( enter )' }).click(),
     ])
 
@@ -69,7 +77,11 @@ test('after creating an issue via API, edit it and assert via API', async ({ req
     await page.getByRole('textbox', { name: /markdown value/i }).fill(newBody)
 
     await Promise.all([
-      page.waitForResponse(r => r.url().includes('/_graphql') && r.status() === 200),
+      page.waitForResponse(r =>
+        r.url().includes('/_graphql') &&
+        r.status() === 200 &&
+        r.request().postData()?.includes('updateIssueBodyMutation')
+      ),
       page.getByRole('button', { name: /^save$/i }).click(),
     ])
 
@@ -98,7 +110,11 @@ test('after creating an issue via API, close it and assert via API', async ({ re
     await page.goto(`${REPO_URL}/issues/${created.number}`)
 
     await Promise.all([
-      page.waitForResponse(r => r.url().includes('/_graphql') && r.status() === 200),
+      page.waitForResponse(r =>
+        r.url().includes('/_graphql') &&
+        r.status() === 200 &&
+        r.request().postData()?.includes('updateIssueStateMutationCloseMutation')
+      ),
       page.getByRole('button', { name: /close issue/i }).click(),
     ])
 
