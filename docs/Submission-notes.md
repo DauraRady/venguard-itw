@@ -26,4 +26,4 @@
 - Add a retry wrapper around `_addIssueComment` to handle GitHub's propagation delay on freshly created issues (occasional 422 errors).
 - Extract a shared constant for the `waitForResponse` GraphQL filter to reduce duplication across spec files.
 - Add a global teardown that closes any orphaned issues left by failed test runs.
-- Investigate filtering `waitForResponse` by GraphQL mutation name in the request body (e.g., `closeIssueMutation`) for more precise synchronization.
+
