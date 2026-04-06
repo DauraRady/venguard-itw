@@ -16,7 +16,11 @@ const getRandomNumber = async (min, max, decimal = 0) => {
   return Math.round(raw * factor) / factor
 }
 
+const isGraphQLSuccess = (response) =>
+  response.url().includes('/_graphql') && response.status() === 200
+
 module.exports = {
   getRandomLetters,
   getRandomNumber,
+  isGraphQLSuccess,
 }

@@ -2,6 +2,7 @@ require('dotenv').config()
 
 const { test, expect } = require('../../fixtures/fixtures.js')
 const hlpGitHub = require('../../helpers/github/helpers.js')
+const hlpPW = require('../../helpers/pw/helpers.js')
 
 const REPO_URL = `https://github.com/${hlpGitHub.getRepoContext().owner}/${hlpGitHub.getRepoContext().repo}`
 
@@ -20,8 +21,7 @@ test('after creating a comment via UI, it should be visible via API', async ({ r
 
     await Promise.all([
       page.waitForResponse(r =>
-        r.url().includes('/_graphql') &&
-        r.status() === 200 &&
+        hlpPW.isGraphQLSuccess(r) &&
         r.request().postData()?.includes('addCommentMutation')
       ),
       page.getByRole('button', { name: 'Comment', exact: true }).click(),
@@ -56,8 +56,7 @@ test('after creating a comment via API, edit it and assert via API', async ({ re
 
     await Promise.all([
       page.waitForResponse(r =>
-        r.url().includes('/_graphql') &&
-        r.status() === 200 &&
+        hlpPW.isGraphQLSuccess(r) &&
         r.request().postData()?.includes('updateIssueCommentBodyMutation')
       ),
       page.getByRole('button', { name: 'Update comment' }).click(),
@@ -89,8 +88,7 @@ test('after creating a comment via API, delete it and assert via API', async ({ 
 
     await Promise.all([
       page.waitForResponse(r =>
-        r.url().includes('/_graphql') &&
-        r.status() === 200 &&
+        hlpPW.isGraphQLSuccess(r) &&
         r.request().postData()?.includes('deleteIssueCommentMutation')
       ),
       page.getByRole('button', { name: 'Delete', exact: true }).click(),

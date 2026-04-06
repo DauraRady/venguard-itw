@@ -2,6 +2,7 @@ require('dotenv').config()
 
 const { test, expect } = require('../../fixtures/fixtures.js')
 const hlpGitHub = require('../../helpers/github/helpers.js')
+const hlpPW = require('../../helpers/pw/helpers.js')
 
 const REPO_URL = `https://github.com/${hlpGitHub.getRepoContext().owner}/${hlpGitHub.getRepoContext().repo}`
 
@@ -17,8 +18,7 @@ test('after creating an issue via UI, it should be visible in the UI', async ({ 
 
     await Promise.all([
       page.waitForResponse(r =>
-        r.url().includes('/_graphql') &&
-        r.status() === 200 &&
+        hlpPW.isGraphQLSuccess(r) &&
         r.request().postData()?.includes('createIssueMutation')
       ),
       page.waitForURL(/\/issues\/\d+$/),
@@ -65,8 +65,7 @@ test('after creating an issue via API, edit it and assert via API', async ({ req
 
     await Promise.all([
       page.waitForResponse(r =>
-        r.url().includes('/_graphql') &&
-        r.status() === 200 &&
+        hlpPW.isGraphQLSuccess(r) &&
         r.request().postData()?.includes('updateIssueTitleMutation')
       ),
       page.getByRole('button', { name: 'Save ( enter )' }).click(),
@@ -78,8 +77,7 @@ test('after creating an issue via API, edit it and assert via API', async ({ req
 
     await Promise.all([
       page.waitForResponse(r =>
-        r.url().includes('/_graphql') &&
-        r.status() === 200 &&
+        hlpPW.isGraphQLSuccess(r) &&
         r.request().postData()?.includes('updateIssueBodyMutation')
       ),
       page.getByRole('button', { name: /^save$/i }).click(),
@@ -111,8 +109,7 @@ test('after creating an issue via API, close it and assert via API', async ({ re
 
     await Promise.all([
       page.waitForResponse(r =>
-        r.url().includes('/_graphql') &&
-        r.status() === 200 &&
+        hlpPW.isGraphQLSuccess(r) &&
         r.request().postData()?.includes('updateIssueStateMutationCloseMutation')
       ),
       page.getByRole('button', { name: /close issue/i }).click(),

@@ -2,6 +2,22 @@
 require('dotenv').config()
 const hlpPW = require('../pw/helpers.js')
 
+const RETRYABLE_STATUSES = [422, 429, 500, 502, 503, 504]
+
+const withRetry = async (fn, { retries = 3, delay = 1000 } = {}) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn()
+    } catch (err) {
+      const status = err.status ?? err.statusCode
+      const isRetryable = !status || RETRYABLE_STATUSES.includes(status)
+
+      if (i === retries - 1 || !isRetryable) throw err
+      await new Promise(r => setTimeout(r, delay * (i + 1)))
+    }
+  }
+}
+
 // These helpers intentionally target the candidate's own temporary GitHub repository.
 const getRequiredEnv = (name) => {
   const value = process.env[name]
@@ -103,21 +119,25 @@ const _getIssueComments = async (request, issueNumber) => {
 }
 
 const _addIssueComment = async (request, issueNumber, body) => {
-  const { owner, repo } = getRepoContext()
+  return withRetry(async () => {
+    const { owner, repo } = getRepoContext()
 
-  const response = await request.post(
-    `https://api.github.com/repos/${owner}/${repo}/issues/${issueNumber}/comments`,
-    {
-      headers: getAuthHeaders(),
-      data: { body },
+    const response = await request.post(
+      `https://api.github.com/repos/${owner}/${repo}/issues/${issueNumber}/comments`,
+      {
+        headers: getAuthHeaders(),
+        data: { body },
+      }
+    )
+
+    if (!response.ok()) {
+      const err = new Error(`Failed to add comment to issue ${issueNumber}: ${response.status()} ${await response.text()}`)
+      err.status = response.status()
+      throw err
     }
-  )
 
-  if (!response.ok()) {
-    throw new Error(`Failed to add comment to issue ${issueNumber}: ${response.status()} ${await response.text()}`)
-  }
-
-  return await response.json()
+    return await response.json()
+  })
 }
 
 const _closeIssue = async (request, issueNumber) => {
