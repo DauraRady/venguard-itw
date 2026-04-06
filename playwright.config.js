@@ -7,6 +7,7 @@ const storageState = process.env.GITHUB_STORAGE_STATE
 
 module.exports = defineConfig({
   testDir: './tests',
+  globalTeardown: './teardown.js',
   timeout: 60_000,
   retries: 0,
   workers: 1,
@@ -14,6 +15,8 @@ module.exports = defineConfig({
     baseURL: 'https://github.com',
     headless: true,
     viewport: { width: 1280, height: 720 },
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
     storageState,
   },
   reporter: [['list']],

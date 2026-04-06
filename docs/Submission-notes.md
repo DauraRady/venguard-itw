@@ -21,9 +21,9 @@
 - **Cleanup in `finally` with `.catch(() => {})`**: If a test fails and the request context is disposed, the cleanup call would throw and mask the original error. The `.catch` prevents this while still attempting cleanup on success.
 - **No Page Object Model**: As instructed. Locators live directly in the test, sourced from `page.scanDOM()` and Codegen.
 
-## What I Would Improve With Another Hour
+## What Was Improved
 
-- Add a retry wrapper around `_addIssueComment` to handle GitHub's propagation delay on freshly created issues (occasional 422 errors).
-- Extract a shared constant for the `waitForResponse` GraphQL filter to reduce duplication across spec files.
-- Add a global teardown that closes any orphaned issues left by failed test runs.
-
+- **Retry wrapper on `_addIssueComment`**: GitHub occasionally returns 422 ("Validation failed, or the endpoint has been spammed") when commenting on a freshly created issue due to propagation delay. The wrapper retries on transient statuses (422, 429, 5xx) with incremental backoff, while failing immediately on client errors (400, 401, 403, 404) to avoid masking real bugs.
+- **Shared `isGraphQLSuccess` constant**: The `waitForResponse` filter (`r.url().includes('/_graphql') && r.status() === 200`) was duplicated across all 6 tests. Extracted into `helpers/pw/helpers.js` as `isGraphQLSuccess(response)` so each test only adds its mutation-specific `postData` check.
+- **Global teardown**: Added `teardown.js` referenced via `globalTeardown` in `playwright.config.js`. After each test run, it fetches all open issues prefixed with `Playwright issue` and closes them. This catches orphaned issues left behind when a test crashes before reaching its `finally` cleanup block.
+- **API version fix in `tools/github/shared.js`**: The `X-GitHub-Api-Version` header was set to `2026-03-10` (future-dated), inconsistent with `2022-11-28` used in the helpers. Aligned to `2022-11-28` to match the documented stable version.

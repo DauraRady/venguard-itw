@@ -48,7 +48,7 @@ const githubRequest = async (pathname, { method = 'GET', body } = {}) => {
   const headers = {
     Accept: 'application/vnd.github+json',
     Authorization: `Bearer ${getEnv('GITHUB_TOKEN')}`,
-    'X-GitHub-Api-Version': '2026-03-10',
+    'X-GitHub-Api-Version': '2022-11-28',
   }
 
   const options = { method, headers }
